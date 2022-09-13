@@ -1,3 +1,5 @@
+import json
+
 import requests
 from telebot import TeleBot
 
@@ -7,16 +9,25 @@ token = "5539308298:AAGV6KA1Ngvkbeg2v5V1iYglaFmqd2tz-cc"
 
 bot = TeleBot(token)
 
-database = {
-    "user_id": "token"
-}
+
+def get_user_token(user_id):
+    with open("database.json", 'r') as f:
+        db = json.load(f)
+        return db.get(user_id)
+
+
+def add_new_token(user_id, user_token):
+    with open("database.json", 'r+') as f:
+        db = json.load(f)
+        db[user_id] = user_token
+        json.dump(db, f)
 
 
 @bot.message_handler(commands=["start"])
 def send_welcome(message):
     user_id = message.from_user.id
-    if not database.get(user_id):
-        database[user_id] = message.text.split()[-1]
+    if not get_user_token(user_id):
+        add_new_token(user_id, message.text.split()[-1])
         bot.reply_to(message, "Welcome to Party Bot")
     else:
         bot.reply_to(message, "Error, user id is already set")
@@ -34,7 +45,7 @@ def create_event(message):
         "ends_at": data_blocks[4]
     }
 
-    result = requests.post(f"{BASE_URL}/event", json=data, headers={"auth_telegram_token": database[user_id]})
+    result = requests.post(f"{BASE_URL}/event", json=data, headers={"auth_telegram_token": get_user_token(user_id)})
     bot.reply_to(message, str(result.json()))
 
 

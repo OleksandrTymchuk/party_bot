@@ -5,7 +5,10 @@ from telebot import TeleBot
 
 from consts import BASE_URL
 
-token = "5539308298:AAGV6KA1Ngvkbeg2v5V1iYglaFmqd2tz-cc"
+token = None
+
+with open("token.txt") as f:
+    token = f.read().strip()
 
 bot = TeleBot(token)
 
